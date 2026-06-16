@@ -1,6 +1,6 @@
-# Decentrawood Multi-Bot
+# Multi Agent Bot
 
-A **RAG-powered Telegram assistant** for the [Decentrawood](https://decentrawood.com/) group. Four AI personas answer member questions using official docs, admin announcements, and community history.
+A **RAG-powered Telegram assistant** for groups. Four AI personas answer member questions using official docs, admin announcements, and community history.
 
 ## Quick Overview
 
@@ -140,7 +140,7 @@ Each reply randomly picks one. All use same RAG context — persona only affects
 ## Project Structure
 
 ```
-multi_decentrawood_bot1/
+multi__bot1/
 ├── main.py                          # Entire app (config, RAG, bots, CLI)
 ├── requirements.txt                 # Dependencies
 ├── .env                             # Secrets (never commit)
@@ -187,7 +187,7 @@ ENABLE_AUTO_TOPICS=true
 ### Setup Steps
 
 1. Create **4 bots** via [@BotFather](https://t.me/BotFather)
-2. Add all 4 to Decentrawood group (disable privacy mode)
+2. Add all 4  group (disable privacy mode)
 3. Get `GROUP_CHAT_ID` (negative number)
 4. Run Telethon once to create `bot_session.session`
 5. Edit `ADMINS` dict in `main.py` with your admin usernames/IDs
@@ -298,3 +298,5 @@ Members ask → **Curious bot** listens → Message guards filter → Intent cla
 - Keep `.env` and `bot_session.session` **private** — never commit to git
 - For production: use `systemd`, PM2, or similar for auto-restart
 - Monitor API costs (OpenAI, CoinMarketCap)
+
+ CONTACT ME FOR ANY HELP - sushantmanitripathiji@gmail.com
