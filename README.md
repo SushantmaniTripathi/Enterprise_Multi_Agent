@@ -14,22 +14,6 @@ A **RAG-powered Telegram assistant** for groups. Four AI personas answer member 
 
 ---
 
-## What This Project Does
-
-| Capability | Description |
-|------------|-------------|
-| **Q&A in Telegram group** | Listens for real questions (keywords / `?`) and replies with RAG-backed answers |
-| **Four distinct personas** | Helper, Curious, Tech, Skeptic — each with different tone, randomly chosen per reply |
-| **Knowledge from multiple sources** | PDFs, admin CSV history, live message log, OCR from photos |
-| **Live price lookup** | DEOD price via CoinMarketCap when users ask about price/value |
-| **Admin announcement reactions** | Bots briefly react to big admin posts (airdrops, listings, campaigns) |
-| **Idle engagement** | When the group is quiet, bots share facts, ask questions, or post openers |
-| **Self-updating knowledge** | Background jobs re-fetch admin history and rebuild the vector index |
-
-**Single entry point:** `main.py` (~1,400 lines). No separate API server — everything runs in one Python process with background threads.
-
----
-
 ## Architecture
 
 ```mermaid
@@ -53,6 +37,22 @@ flowchart TB
 ```
 
 ---
+## What This Project Does
+
+| Capability | Description |
+|------------|-------------|
+| **Q&A in Telegram group** | Listens for real questions (keywords / `?`) and replies with RAG-backed answers |
+| **Four distinct personas** | Helper, Curious, Tech, Skeptic — each with different tone, randomly chosen per reply |
+| **Knowledge from multiple sources** | PDFs, admin CSV history, live message log, OCR from photos |
+| **Live price lookup** | DEOD price via CoinMarketCap when users ask about price/value |
+| **Admin announcement reactions** | Bots briefly react to big admin posts (airdrops, listings, campaigns) |
+| **Idle engagement** | When the group is quiet, bots share facts, ask questions, or post openers |
+| **Self-updating knowledge** | Background jobs re-fetch admin history and rebuild the vector index |
+
+**Single entry point:** `main.py` (~1,400 lines). No separate API server — everything runs in one Python process with background threads.
+
+---
+
 
 ## Core Components
 
