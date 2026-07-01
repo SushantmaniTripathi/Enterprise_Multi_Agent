@@ -1,16 +1,41 @@
-# Multi Agent Enterprise Sytem 
+# Multi Agent Enterprise System
 
-A **RAG-powered Telegram assistant** for groups. Four AI personas answer member questions using official docs, admin announcements, and community history.
+<div align="center">
+
+### Tech Stack
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI_GPT4o-412991?style=for-the-badge&logo=openai&logoColor=white)
+![Telegram](https://img.shields.io/badge/Telegram_Bot-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)
+![Qdrant](https://img.shields.io/badge/Qdrant-DC244C?style=for-the-badge&logo=data&logoColor=white)
+
+![LangChain](https://img.shields.io/badge/LangChain-121212?style=for-the-badge)
+![Telethon](https://img.shields.io/badge/Telethon-0088CC?style=for-the-badge&logo=telegram&logoColor=white)
+![Vector_DB-Embedding](https://img.shields.io/badge/Vector_DB-FF6B35?style=for-the-badge)
+![OCR-Vision_AI](https://img.shields.io/badge/OCR-Vision_AI-00B894?style=for-the-badge)
+
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![CoinMarketCap](https://img.shields.io/badge/CoinMarketCap_API-17181C?style=for-the-badge)
+![REST_API](https://img.shields.io/badge/API-REST-6C5CE7?style=for-the-badge)
+![Automation](https://img.shields.io/badge/Background_Workers-2ECC71?style=for-the-badge)
+
+</div>
+
+---
+
+A **RAG-powered Telegram assistant ecosystem** for communities and enterprise groups. Four AI personas answer user questions using official documentation, admin announcements, community history, and continuously updated knowledge retrieval.
+
+---
 
 ## Quick Overview
 
 | Aspect | Details |
-|--------|---------|
-| **What it does** | Listens for group questions → retrieves relevant docs/admin posts from Qdrant → uses GPT-4o-mini to synthesize answers with consistent personas |
-| **Knowledge sources** | PDFs, admin history (CSV), live message log, OCR from photos |
-| **Bots** | Helper, Curious (listener), Tech, Skeptic — random selection per reply |
-| **Entry point** | `main.py` (~1,400 lines, single process, background threads) |
-| **Architecture** | Telegram → Message guards → Intent classification → RAG retrieval → LLM synthesis → Quality gate → Send via bot |
+|----------|----------|
+| **What it does** | Detects user questions → retrieves relevant documents/admin history from Qdrant → synthesizes contextual replies using GPT-4o-mini |
+| **Knowledge sources** | PDFs, admin announcements (CSV), live message logs, OCR extracted image content |
+| **Bots** | Helper, Curious (listener), Tech, Skeptic |
+| **Entry point** | `main.py` (~1400 lines, single process architecture) |
+| **Architecture** | Telegram → Guards → Intent Classification → RAG Retrieval → LLM Generation → Quality Validation → Bot Response |
 
 ---
 
@@ -19,152 +44,194 @@ A **RAG-powered Telegram assistant** for groups. Four AI personas answer member 
 ```mermaid
 flowchart TB
     USER["User Messages"] --> LISTEN["Curious Bot<br/>(Listener)"]
-    LISTEN --> GUARDS["Message Guards<br/>(filter noise)"]
+    LISTEN --> GUARDS["Message Guards<br/>(Noise Filtering)"]
     GUARDS --> INTENT["Intent Classifier<br/>(overview|events|fact)"]
     INTENT --> RETRIEVE["RAG Retrieval<br/>(Qdrant)"]
     RETRIEVE --> DOCS["official_docs<br/>(PDFs)"]
     RETRIEVE --> COMMUNITY["community_data<br/>(CSV)"]
-    INTENT --> LLM["GPT-4o-mini<br/>(synthesize)"]
+    INTENT --> LLM["GPT-4o-mini<br/>(Generation)"]
     RETRIEVE --> LLM
-    LLM --> QUALITY["Quality Gate<br/>(_is_bad_reply)"]
+    LLM --> QUALITY["Quality Gate<br/>(Validation Layer)"]
     QUALITY --> SEND["Send via<br/>Random Bot"]
     SEND --> USER
     
-    HISTORY["Telethon<br/>(24h scraper)"] --> CSV["messages.json<br/>+ CSV"]
-    CSV --> INDEX["build_index<br/>(6h watcher)"]
-    INDEX --> QDRANT["Qdrant<br/>(embeddings)"]
+    HISTORY["Telethon<br/>(24h Scraper)"] --> CSV["messages.json<br/>+ CSV"]
+    CSV --> INDEX["Build Index<br/>(6h Watcher)"]
+    INDEX --> QDRANT["Qdrant<br/>(Embeddings)"]
     QDRANT --> RETRIEVE
 ```
 
 ---
+
 ## What This Project Does
 
 | Capability | Description |
 |------------|-------------|
-| **Q&A in Telegram group** | Listens for real questions (keywords / `?`) and replies with RAG-backed answers |
-| **Four distinct personas** | Helper, Curious, Tech, Skeptic — each with different tone, randomly chosen per reply |
-| **Knowledge from multiple sources** | PDFs, admin CSV history, live message log, OCR from photos |
-| **Live price lookup** | DEOD price via CoinMarketCap when users ask about price/value |
-| **Admin announcement reactions** | Bots briefly react to big admin posts (airdrops, listings, campaigns) |
-| **Idle engagement** | When the group is quiet, bots share facts, ask questions, or post openers |
-| **Self-updating knowledge** | Background jobs re-fetch admin history and rebuild the vector index |
+| **Telegram Q&A Assistant** | Detects valid user questions and responds with retrieval-backed answers |
+| **Multi-Agent Personas** | Helper, Curious, Tech, Skeptic with different communication styles |
+| **Multi-source Knowledge** | PDFs, community history, admin data, OCR extracted image text |
+| **Live Price Lookup** | Fetches token/coin prices using CoinMarketCap API |
+| **Admin Event Reactions** | Bots automatically react to major admin announcements |
+| **Idle Engagement Engine** | Generates autonomous engagement when community is inactive |
+| **Continuous Knowledge Updates** | Background workers rebuild vector database automatically |
 
-**Single entry point:** `main.py` (~1,400 lines). No separate API server — everything runs in one Python process with background threads.
+**Architecture:** Single-process Python application with concurrent background workers.
 
 ---
-
 
 ## Core Components
 
-### Listener (Curious Bot)
-- Only bot that **receives** group messages
-- All 4 bots **send** replies (randomly selected)
-- Handles text and photo content
+### Listener Agent (Curious Bot)
 
-### Reply Engine
-1. Classify intent: `overview` | `events` | `fact`
-2. Expand search query
-3. Retrieve top-k chunks from Qdrant (official + community)
-4. Build persona + context prompt
-5. GPT-4o-mini synthesizes answer
-6. Quality gate: reject if too short → retry or fallback
-7. Send via random bot
+- Sole message receiver
+- Handles incoming text + photo messages
+- Routes valid messages into processing pipeline
 
-### Vector Store (Qdrant)
-- **Embeddings:** OpenAI `text-embedding-ada-002` (1536 dim, cosine similarity)
-- **Collections:**
-  - `official_docs` — Chunked PDFs/TXT (1000 chars, 150 overlap)
-  - `community_data` — Filtered CSV rows with authority boosts
+---
 
-### Ranking Boosts
-```
+### Reply Engine Pipeline
+
+1. Intent Classification → `overview | events | fact`
+2. Query Expansion  
+3. Retrieve top-k vectors from Qdrant  
+4. Build persona + contextual prompt  
+5. Generate answer via GPT-4o-mini  
+6. Validate answer quality  
+7. Send through randomly selected bot persona  
+
+---
+
+### Vector Database (Qdrant)
+
+**Embeddings**
+
+- OpenAI `text-embedding-ada-002`
+- 1536 dimensions
+- Cosine similarity search
+
+**Collections**
+
+- `official_docs` → PDFs/TXT chunks  
+- `community_data` → CSV/admin/community history  
+
+---
+
+### Ranking Logic
+
+```text
 score = vector_distance + authority_boost + recency_boost + doc_type_boost
 ```
-Authority: Official docs > Announcements > Admin > Community
+
+Priority hierarchy:
+
+```text
+Official Docs > Announcements > Admin > Community
+```
+
+---
 
 ### History Scraper (Telethon)
-- Fetches last 24h of admin messages every **24 hours**
-- Updates `messages.json` + CSV files
-- Triggers full RAG rebuild after sync
+
+- Fetches previous 24h admin messages
+- Runs every 24 hours
+- Updates CSV + messages.json
+- Triggers vector rebuild after synchronization
+
+---
 
 ### Live Logging
-- All Q&A appended to `pdfs/live_updates.csv`
-- Used for audit and re-indexing
+
+Stores all conversations in:
+
+```text
+pdfs/live_updates.csv
+```
+
+Used for:
+
+- Re-indexing
+- Audit trail
+- Historical retrieval
 
 ---
 
-## Message Filtering
+## Message Filtering Rules
 
-Questions are processed if they:
-- Contain `?` OR a keyword (`deod`, `staking`, `airdrop`, etc.)
-- Are longer than 5 characters
-- Come from group members (not bots)
+Questions processed only if:
 
-**Ignored:** Bot messages, photos-only, very short greetings, private DMs
+- Contains `?`
+- Contains trigger keywords (`deod`, `staking`, `airdrop`, etc.)
+- Message > 5 characters
+- Message from actual group member
 
-**Special handling:**
-- Admin announcements: optional bot reaction (8–20s delay)
-- Photos: OCR to CSV, no immediate reply
-- Idle group (67+ min silent): auto-share facts or ask questions
+Ignored:
+
+- Bot messages  
+- Private DMs  
+- Photos only  
+- Short greetings  
+
+Special handling:
+
+- Admin announcements → delayed reactions (8–20 sec)
+- Photos → OCR extraction only
+- Silent group (67+ min) → autonomous engagement
 
 ---
 
-## The Four Bots
+## AI Agents
 
-| Bot | Token Env | Personality |
-|-----|-----------|-------------|
-| Helper | `BOT_HELPER_TOKEN` | Warm, direct, clear |
-| Curious | `BOT_CURIOUS_TOKEN` | Thoughtful, engaged *(also listener)* |
-| Tech | `BOT_TECH_TOKEN` | Precise, contract-focused |
+| Agent | Environment Variable | Behavior |
+|---------|---------|---------|
+| Helper | `BOT_HELPER_TOKEN` | Clear, warm communication |
+| Curious | `BOT_CURIOUS_TOKEN` | Engaged, conversational *(listener)* |
+| Tech | `BOT_TECH_TOKEN` | Technical, precise |
 | Skeptic | `BOT_SKEPTIC_TOKEN` | Analytical, balanced |
 
-Each reply randomly picks one. All use same RAG context — persona only affects **tone**, not **facts**.
-
-**Answer length by intent:**
-- `overview`: 2–4 sentences
-- `events`: 2–3 sentences + dates
-- `fact`: 1–2 sentences
+All bots use same retrieval context. Difference exists only in response style.
 
 ---
 
 ## Background Workers
 
-| Thread | Interval | Task |
-|--------|----------|------|
-| **History scraper** | 24h | Fetch admin messages → update CSV → rebuild index |
-| **Index watcher** | 6h | Rebuild Qdrant if CSV files changed |
-| **Auto topics** | 50–115 min | Post idle content if group silent for 67+ min |
+| Worker | Interval | Function |
+|----------|----------|----------|
+| History Scraper | 24h | Fetch admin messages + rebuild knowledge |
+| Index Watcher | 6h | Detect changes and rebuild vector index |
+| Auto Topics | 50–115 min | Generate engagement when group inactive |
 
 ---
 
 ## Project Structure
 
-```
-multi__bot1/
-├── main.py                          # Entire app (config, RAG, bots, CLI)
-├── requirements.txt                 # Dependencies
-├── .env                             # Secrets (never commit)
-├── bot_session.session              # Telethon session
-│
-├── pdfs/                            # Knowledge sources
-│   ├── *.pdf, *.txt                 # Official docs → indexed
-│   ├── *.csv                        # Admin history
-│   ├── live_updates.csv             # Real-time Q&A log
-│   └── photo_hashes.json            # OCR dedup cache
-│
-├── qdrant_storage/                  # Vector DB (local)
-└── venv_bot/                        # Virtual environment
+```bash
+multi_bot/
+
+├── main.py
+├── requirements.txt
+├── .env
+├── bot_session.session
+
+├── pdfs/
+│   ├── *.pdf
+│   ├── *.txt
+│   ├── *.csv
+│   ├── live_updates.csv
+│   └── photo_hashes.json
+
+├── qdrant_storage/
+└── venv_bot/
 ```
 
 ---
 
 ## Configuration
 
-Create `.env` in project root:
+Create `.env`
 
 ```env
-# ── Required ──
 OPENAI_API_KEY=sk-...
+
 GROUP_CHAT_ID=-100xxxxxxxxxx
 
 BOT_HELPER_TOKEN=...
@@ -172,34 +239,29 @@ BOT_CURIOUS_TOKEN=...
 BOT_TECH_TOKEN=...
 BOT_SKEPTIC_TOKEN=...
 
-# ── Qdrant ──
 QDRANT_URL=http://localhost:6333
 
-# ── Telethon ──
 TELEGRAM_API_ID=...
 TELEGRAM_API_HASH=...
 
-# ── Optional ──
 COINMARKETCAP_API_KEY=...
+
 ENABLE_AUTO_TOPICS=true
 ```
 
-### Setup Steps
-
-1. Create **4 bots** via [@BotFather](https://t.me/BotFather)
-2. Add all 4  group (disable privacy mode)
-3. Get `GROUP_CHAT_ID` (negative number)
-4. Run Telethon once to create `bot_session.session`
-5. Edit `ADMINS` dict in `main.py` with your admin usernames/IDs
-
 ---
 
-## Setup & Run
+## Setup
 
-### Prerequisites
+### Requirements
+
 - Python 3.10+
-- Qdrant (Docker or local)
-- OpenAI + Telegram + Telethon credentials
+- Docker
+- Qdrant
+- Telegram API credentials
+- OpenAI API key
+
+---
 
 ### Installation
 
@@ -209,19 +271,21 @@ python -m venv venv_bot
 pip install -r requirements.txt
 ```
 
-### Start Qdrant
+---
+
+### Run Qdrant
 
 ```powershell
 docker run -p 6333:6333 -v "%cd%\qdrant_storage:/qdrant/storage" qdrant/qdrant
 ```
 
-### Run Bot
+---
+
+### Start Application
 
 ```powershell
-# Clean old bot rows + rebuild index (recommended first run)
 python main.py --clean-csv
 
-# Start bot (auto-builds index if needed)
 python main.py
 ```
 
@@ -230,73 +294,102 @@ python main.py
 ## CLI Commands
 
 | Command | Action |
-|---------|--------|
-| `python main.py` | Start bot (auto-build index if needed) |
-| `python main.py --build` | Force full index rebuild |
-| `python main.py --clean-csv` | Remove bot rows from CSVs + rebuild |
+|----------|----------|
+| `python main.py` | Start application |
+| `python main.py --build` | Force rebuild vector index |
+| `python main.py --clean-csv` | Remove bot rows and rebuild |
 
 ---
 
 ## Data Sources
 
-| Source | Indexed as | Filter rules |
-|--------|-----------|--------------|
-| `pdfs/*.pdf, *.txt` | `official_docs` | Chunk: 1000 chars, overlap: 150 |
-| `pdfs/*.csv` | `community_data` | Length > 10 chars, relevance keywords or admin |
-| `live_updates.csv` | Both | Q&A log (no bot rows indexed) |
+| Source | Indexed As | Rules |
+|----------|----------|----------|
+| PDFs/TXT | official_docs | Chunk size 1000, overlap 150 |
+| CSV Files | community_data | Relevance filtering |
+| live_updates.csv | Both | Stores live Q&A logs |
 
-**Authority boost:** Official docs > Announcements > Admin > Community
+Important:
 
-**Critical:** Bot replies never indexed (prevents "idk tbh" filling the database)
+```text
+Bot generated responses are never indexed.
+```
+
+Prevents low-quality responses contaminating retrieval database.
 
 ---
 
 ## Troubleshooting
 
 | Issue | Cause | Fix |
-|-------|-------|-----|
-| One-word answers | Old code or bad quality gate | Ensure latest `main.py` |
-| Always "idk tbh" | Qdrant empty/unreachable | Check `QDRANT_URL`, run `--build` |
-| Bot never replies | Privacy mode on / missing `?` | Disable privacy, use keywords |
-| Stale event info | Index outdated | Run `--build` |
-| History not updating | Telethon session missing | Run Telethon login interactively |
-| Bot answers in database | CSV pollution | Run `python main.py --clean-csv` |
-| Price lookup fails | No CMC key | Set `COINMARKETCAP_API_KEY` |
+|----------|----------|----------|
+| Short replies | Validation issue | Update latest main.py |
+| “idk tbh” responses | Empty vector DB | Run `--build` |
+| Bot inactive | Privacy mode enabled | Disable privacy |
+| Stale answers | Old embeddings | Rebuild index |
+| No history sync | Telethon missing | Login manually |
+| Price lookup fails | Missing API key | Add CoinMarketCap key |
 
-**Verify Qdrant:**
-```powershell
-curl http://localhost:6333/collections
+---
+
+## Full Tech Stack
+
+| Layer | Technology |
+|----------|----------|
+| Language | Python 3.10+ |
+| LLM | OpenAI GPT-4o-mini |
+| Embeddings | OpenAI text-embedding-ada-002 |
+| Vector Database | Qdrant |
+| Telegram Framework | pyTelegramBotAPI |
+| History Scraper | Telethon |
+| Retrieval Pipeline | LangChain |
+| OCR | GPT-4o-mini Vision |
+| Price API | CoinMarketCap |
+| Config | python-dotenv |
+| Deployment | Docker |
+
+---
+
+## System Flow
+
+```text
+User Message
+      ↓
+Curious Bot Listener
+      ↓
+Message Validation Layer
+      ↓
+Intent Classification
+      ↓
+Vector Retrieval (Qdrant)
+      ↓
+Context Construction
+      ↓
+GPT-4o-mini Generation
+      ↓
+Quality Validation
+      ↓
+Random Agent Response
+```
+
+Background processes:
+
+```text
+Telethon → History Sync → CSV Update → Rebuild Embeddings → Qdrant Update
 ```
 
 ---
 
-## Tech Stack
+## Security Notes
 
-| Layer | Technology |
-|-------|------------|
-| Language | Python 3.10+ |
-| Telegram | [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI) (send/listen) |
-| History scraper | [Telethon](https://github.com/LonamiWebs/Telethon) |
-| LLM | OpenAI GPT-4o-mini |
-| Embeddings | OpenAI `text-embedding-ada-002` |
-| Vector DB | [Qdrant](https://qdrant.tech/) |
-| Document parsing | LangChain (PyPDF, TextLoader, RecursiveCharacterTextSplitter) |
-| OCR | GPT-4o-mini vision |
-| Price data | CoinMarketCap Pro API |
-| Config | python-dotenv |
+- Never commit `.env`
+- Never expose `bot_session.session`
+- Use process managers (`systemd`, PM2) for production deployment
+- Monitor OpenAI API usage and cost
 
 ---
 
-## Summary
+## Contact
 
-Members ask → **Curious bot** listens → Message guards filter → Intent classification → **Qdrant** retrieval (official + community) → **GPT-4o-mini** synthesis → Quality gate → Send via random bot persona. In parallel: **Telethon** scrapes admin history, **live_updates.csv** logs interactions, **background threads** rebuild index every 6h.
-
----
-
-## Important Notes
-
-- Keep `.env` and `bot_session.session` **private** — never commit to git
-- For production: use `systemd`, PM2, or similar for auto-restart
-- Monitor API costs (OpenAI, CoinMarketCap)
-
- CONTACT ME FOR ANY HELP - sushantmanitripathiji@gmail.com
+**Sushant Mani Tripathi**  
+📧 sushantmanitripathiji@gmail.com
