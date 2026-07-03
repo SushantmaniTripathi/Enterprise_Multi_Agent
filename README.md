@@ -53,7 +53,7 @@ flowchart TB
     RETRIEVE --> LLM
     LLM --> QUALITY["Quality Gate<br/>(Validation Layer)"]
     QUALITY --> SEND["Send via<br/>Random Bot"]
-    SEND --> USER
+    SEND --> USER 
     
     HISTORY["Telethon<br/>(24h Scraper)"] --> CSV["messages.json<br/>+ CSV"]
     CSV --> INDEX["Build Index<br/>(6h Watcher)"]
