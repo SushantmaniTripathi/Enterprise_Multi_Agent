@@ -39,30 +39,6 @@ A **RAG-powered Telegram assistant ecosystem** for communities and enterprise gr
 
 ---
 
-## Architecture
-
-```mermaid
-flowchart TB
-    USER["User Messages"] --> LISTEN["Curious Bot<br/>(Listener)"]
-    LISTEN --> GUARDS["Message Guards<br/>(Noise Filtering)"]
-    GUARDS --> INTENT["Intent Classifier<br/>(overview|events|fact)"]
-    INTENT --> RETRIEVE["RAG Retrieval<br/>(Qdrant)"]
-    RETRIEVE --> DOCS["official_docs<br/>(PDFs)"]
-    RETRIEVE --> COMMUNITY["community_data<br/>(CSV)"]
-    INTENT --> LLM["GPT-4o-mini<br/>(Generation)"]
-    RETRIEVE --> LLM
-    LLM --> QUALITY["Quality Gate<br/>(Validation Layer)"]
-    QUALITY --> SEND["Send via<br/>Random Bot"]
-    SEND --> USER 
-    
-    HISTORY["Telethon<br/>(24h Scraper)"] --> CSV["messages.json<br/>+ CSV"]
-    CSV --> INDEX["Build Index<br/>(6h Watcher)"]
-    INDEX --> QDRANT["Qdrant<br/>(Embeddings)"]
-    QDRANT --> RETRIEVE
-```
-
----
-
 ## What This Project Does
 
 | Capability | Description |
