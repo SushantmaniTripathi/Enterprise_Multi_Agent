@@ -39,6 +39,30 @@ A **RAG-powered Telegram assistant ecosystem** for communities and enterprise gr
 
 ---
 
+
+## System Flow
+
+```text
+User Message
+      ↓
+Curious Bot Listener
+      ↓
+Message Validation Layer
+      ↓
+Intent Classification
+      ↓
+Vector Retrieval (Qdrant)
+      ↓
+Context Construction
+      ↓
+GPT-4o-mini Generation
+      ↓
+Quality Validation
+      ↓
+Random Agent Response
+```
+
+
 ## What This Project Does
 
 | Capability | Description |
@@ -325,28 +349,6 @@ Prevents low-quality responses contaminating retrieval database.
 | Deployment | Docker |
 
 ---
-
-## System Flow
-
-```text
-User Message
-      ↓
-Curious Bot Listener
-      ↓
-Message Validation Layer
-      ↓
-Intent Classification
-      ↓
-Vector Retrieval (Qdrant)
-      ↓
-Context Construction
-      ↓
-GPT-4o-mini Generation
-      ↓
-Quality Validation
-      ↓
-Random Agent Response
-```
 
 Background processes:
 
