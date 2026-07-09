@@ -59,7 +59,7 @@ GPT-4o-mini Generation
       ↓
 Quality Validation
       ↓
-Random Agent Response
+Agent Response by understanding context of users past messages
 ```
 
 
