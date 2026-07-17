@@ -25,6 +25,7 @@
 
 A **RAG-powered Telegram assistant ecosystem** for communities and enterprise groups. Four AI personas answer user questions using official documentation, admin announcements, community history, and continuously updated knowledge retrieval.
 
+
 ---
 
 ## Quick Overview
