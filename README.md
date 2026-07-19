@@ -129,16 +129,7 @@ Priority hierarchy:
 Official Docs > Announcements > Admin > Community
 ```
 
----
 
-### History Scraper (Telethon)
-
-- Fetches previous 24h admin messages
-- Runs every 24 hours
-- Updates CSV + messages.json
-- Triggers vector rebuild after synchronization
-
----
 
 ### Live Logging
 
@@ -370,5 +361,5 @@ Telethon → History Sync → CSV Update → Rebuild Embeddings → Qdrant Updat
 
 ## Contact
 
-**Sushant Mani Tripathi**  
+**Sushant Tripathi**  
 📧 sushantmanitripathiji@gmail.com
