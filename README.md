@@ -102,7 +102,7 @@ Agent Response by understanding context of users past messages
 
 ---
 
-### Vector Database (Qdrant)
+### Vector Database (Qdrant/ChromaDB)
 
 **Embeddings**
 
